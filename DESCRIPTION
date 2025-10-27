@@ -1,0 +1,57 @@
+Package: DEGEmbedR
+Type: Package
+Title: Functional Analysis of Differentially Expressed Genes Using LLM-Derived Embeddings in R
+Version: v1.0.0
+Authors@R: 
+    c(person(given = "Li-Ju",
+             family = "Wang",
+             email = "LIW146@pitt.edu",
+             role = c("aut", "cre"),
+             comment = c(affiliation = "Chiu Lab, University of Pittsburgh")),
+             person(given = "Yanhao",
+             family = "Tan",
+             email = "YAT74@pitt.edu",
+             role = "aut",
+             comment = c(affiliation = "Chiu Lab, University of Pittsburgh")),
+             person(given = "Yu-Chiao",
+             family = "Chiu",
+             email = "YUC250@pitt.edu",
+             role = "aut",
+             comment = c(affiliation = "Chiu Lab, University of Pittsburgh"))
+             )
+Description: 
+    DEGEmbedR enables hypothesis generation and statistical testing of gene 
+    functions using dense vector representations (embeddings) derived from large 
+    language models (LLMs). The package provides utilities to (i) compute or 
+    import text/term embeddings (e.g., biological pathways or drug mechanisms 
+    of action), (ii) generate function descriptions via LLMs, and 
+    (iii) compare cosine-similarity distributions between differentially 
+    expressed genes (DEGs) and background genes to quantify enrichment with 
+    nonparametric tests and effect sizes. The framework supports curated 
+    collections (GO BP, MSigDB C2 subcollections, MOA terms) as well as 
+    user-supplied embeddings, facilitating hypothesis testing where predefined 
+    gene sets are lacking and statistical assessment of novel LLM-inferred 
+    functions.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.1
+Depends: 
+    R (>= 4.2.3)
+Imports:
+    httr (>= 1.4.7),
+    jsonlite (>= 1.8.8),
+    lsa (>= 0.73.3),
+    tibble (>= 3.1.8),
+    effsize (>= 0.8.1),
+    stats (>= 4.2.3),
+    stringr,
+    utils
+Suggests:
+    dplyr,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+URL: https://github.com/chiu-lab/DEGEmbedR
+BugReports: https://github.com/chiu-lab/DEGEmbedR/issues
+
