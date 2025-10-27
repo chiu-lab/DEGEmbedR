@@ -1,7 +1,7 @@
 Package: DEGEmbedR
 Type: Package
 Title: Functional Analysis of Differentially Expressed Genes Using LLM-Derived Embeddings in R
-Version: v1.0.0
+Version: 1.0.0
 Authors@R: 
     c(person(given = "Li-Ju",
              family = "Wang",
