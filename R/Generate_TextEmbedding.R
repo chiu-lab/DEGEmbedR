@@ -41,8 +41,7 @@
 #' }
 #'
 #' @seealso
-#' \code{\link[httr]{POST}}, \code{\link[jsonlite]{fromJSON}},
-#' \code{\link{Generate_Desciption}}, \code{\link{Generate_Comparison_tb}}
+#' \code{\link[httr]{POST}}, \code{\link[jsonlite]{fromJSON}}
 #'
 #' @references
 #' OpenAI API documentation:
@@ -56,7 +55,7 @@ Generate_TextEmbedding <- function(
     api_key,
     api_url = "https://api.openai.com/v1/embeddings",
     request_timeout_sec = 60,
-    output
+    output =TRUE
 ) {
   if (!requireNamespace("httr", quietly = TRUE)) stop("Package 'httr' is required.")
   if (!requireNamespace("jsonlite", quietly = TRUE)) stop("Package 'jsonlite' is required.")

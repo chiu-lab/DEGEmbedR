@@ -44,10 +44,8 @@
 #'   \item{\code{top10_degs_with_highest_cosine_similarity}}{Top 10 DEGs with values}
 #' }
 #'
-#' @section
-#' A tab-delimited results file named like
-#' \code{"result_YYYY-MM-DD-HHMMSS.txt"} is written to the working directory.
-#'
+#' @section A tab-delimited results file named like:
+#'  \code{"result_YYYY-MM-DD-HHMMSS.txt"} is written to the working directory.
 #'
 #' @examples
 #' \dontrun{
