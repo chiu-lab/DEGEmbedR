@@ -8,7 +8,8 @@ Generate_TextEmbedding(
   text,
   api_key,
   api_url = "https://api.openai.com/v1/embeddings",
-  request_timeout_sec = 60
+  request_timeout_sec = 60,
+  output
 )
 }
 \arguments{
@@ -21,6 +22,8 @@ Defaults to \code{"https://api.openai.com/v1/embeddings"}.}
 
 \item{request_timeout_sec}{Numeric. Timeout for the API request, in seconds.
 Defaults to \code{60}.}
+
+\item{output}{Logical. The result will be saved as a .txt file (Default: TRUE).}
 }
 \value{
 A numeric matrix where each row corresponds to a text input and each column

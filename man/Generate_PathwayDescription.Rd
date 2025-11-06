@@ -8,7 +8,8 @@ Generate_PathwayDescription(
   pathway,
   api_key,
   api_url = "https://api.openai.com/v1/chat/completions",
-  request_timeout_sec = 60
+  request_timeout_sec = 60,
+  output = TRUE
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ Generate_PathwayDescription(
 \item{api_url}{Character. OpenAI API URL. Default: \code{"https://api.openai.com/v1/chat/completions"}.}
 
 \item{request_timeout_sec}{Numeric. Request timeout in seconds. Default: 60.}
+
+\item{output}{Logical. The result will be saved as a .txt file (Default: TRUE).}
 }
 \value{
 A character vector of length 1 containing the generated pathway description.

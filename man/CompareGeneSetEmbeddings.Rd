@@ -9,12 +9,13 @@ CompareGeneSetEmbeddings(
   bkgs = NULL,
   category = c("GOBP", "C2CP_all", "BIOCARTA", "KEGG", "PID", "REACTOME", "WP", "MOA",
     "Customized"),
-  embedding_input = NULL
+  embedding_input = NULL,
+  output = TRUE
 )
 }
 \arguments{
 \item{degs}{Differentially expressed genes (DEGs). After intersecting with
-the built-in set of 18K genes, the number of matched DEGs must be in \link{15, 500}.}
+the built-in set of 18K genes, the number of matched DEGs must be in 15~500.}
 
 \item{bkgs}{Background gene symbols (optional). If
 \code{NULL},  the built-in set of 18K genes is used.}
@@ -27,6 +28,8 @@ one of \code{"GOBP"}, \code{"C2CP_all"}, \code{"BIOCARTA"}, \code{"KEGG"},
 \item{embedding_input}{Numeric matrix or data frame containing pathway or term
 embeddings (required when \code{category = "Customized"}). Rows represent terms,
 columns represent embedding dimensions (length = 3072). Row names are used as term labels.}
+
+\item{output}{Logical. The result will be saved as a .txt file (Default: TRUE).}
 }
 \value{
 A \link[tibble]{tibble} with one row per pathway/term:
