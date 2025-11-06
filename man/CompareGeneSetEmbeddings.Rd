@@ -62,6 +62,11 @@ curated similarity matrices distributed with the package (GO BP, MSigDB C2
 subcollections BIOCARTA/KEGG/PID/REACTOME/WP, and MOA) as well as a
 "Customized" mode that accepts user-supplied pathway/term embeddings.
 }
+\section{A tab-delimited results file named like}{
+
+\code{"result_YYYY-MM-DD-HHMMSS.txt"} is written to the working directory.
+}
+
 \examples{
 \dontrun{
 # Customized example with mock embeddings (no on-disk .Rdata needed)

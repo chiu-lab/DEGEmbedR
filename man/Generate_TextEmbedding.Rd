@@ -9,7 +9,7 @@ Generate_TextEmbedding(
   api_key,
   api_url = "https://api.openai.com/v1/embeddings",
   request_timeout_sec = 60,
-  output
+  output = TRUE
 )
 }
 \arguments{
@@ -62,8 +62,7 @@ OpenAI API documentation:
 \url{https://platform.openai.com/docs/api-reference/embeddings}
 }
 \seealso{
-\code{\link[httr]{POST}}, \code{\link[jsonlite]{fromJSON}},
-\code{\link{Generate_Desciption}}, \code{\link{Generate_Comparison_tb}}
+\code{\link[httr]{POST}}, \code{\link[jsonlite]{fromJSON}}
 }
 \keyword{OpenAI}
 \keyword{bioinformatics}
