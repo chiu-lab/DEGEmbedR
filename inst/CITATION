@@ -1,0 +1,25 @@
+citHeader("Please cite both the DEGEmbedR paper and the R package:")
+
+citEntry(
+  entry = "Article",
+  title = "Large language model embeddings enable quantitative gene function representation and hypothesis testing",
+  author = personList(
+    person("Yanhao", "Tan", role = c("aut")),
+    person("Li-Ju", "Wang",  role = c("aut")),
+    person("Tianyuzhou", "Liang", role = c("aut")),
+    person("Ying-Ju", "Lai", role = c("aut")),
+    person("Chien-Hung", "Shih", role = c("aut")),
+    person("Yibing", "Guo", role = c("aut")),
+    person("Tyler M.", "Yasaka", role = c("aut")),
+    person("George C.", "Tseng", role = c("aut")),
+    person("Yu-Chiao", "Chiu", role = c("aut", "fnd"))
+  ),
+  year     = "2025",
+  journal = "Under review",
+  textVersion = paste(
+    "Tan, Y., Wang, L.-J., Liang, T., Lai, Y.-J., Shih, C.-H., Guo, Y.,",
+    "Yasaka, T. M., Tseng, G. C., and Chiu, Y.-C. (2025).",
+    "Large language model embeddings enable quantitative gene function representation and hypothesis testing.",
+    "Manuscript under review."
+  )
+)
