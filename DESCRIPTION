@@ -5,19 +5,17 @@ Version: 1.0.0
 Authors@R: 
     c(person(given = "Li-Ju",
              family = "Wang",
-             email = "LIW146@pitt.edu",
-             role = c("aut", "cre"),
-             comment = c(affiliation = "Chiu Lab, University of Pittsburgh")),
-             person(given = "Yanhao",
-             family = "Tan",
-             email = "YAT74@pitt.edu",
              role = "aut",
-             comment = c(affiliation = "Chiu Lab, University of Pittsburgh")),
-             person(given = "Yu-Chiao",
+             comment = c(affiliation = "University of Pittsburgh")),
+      person(given = "Yanhao",
+             family = "Tan",
+             role = "aut",
+             comment = c(affiliation = " University of Pittsburgh")),
+      person(given = "Yu-Chiao",
              family = "Chiu",
              email = "YUC250@pitt.edu",
-             role = "aut",
-             comment = c(affiliation = "Chiu Lab, University of Pittsburgh"))
+             role = c("aut", "cre"),
+             comment = c(affiliation = "University of Pittsburgh"))
              )
 Description: 
     DEGEmbedR enables hypothesis generation and statistical testing of gene 
