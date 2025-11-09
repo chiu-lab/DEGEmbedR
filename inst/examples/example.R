@@ -1,12 +1,14 @@
 ####Example code of DEGEmbedR
+remotes::install_github("chiu-lab/DEGEmbedR")
 
-
+library(DEGEmbedR)
+api_key <-"YOUR_OPENAI_API_KEY"
 ####1. Generate pathway descriptions with GPT-4o####
 #--Single pathway--#
 # Generate a single pathway description
 desc_wnt <- Generate_PathwayDescription(
   pathway = "Wnt Signaling Pathway",
-  api_key = Sys.getenv("OPENAI_API_KEY")
+  api_key
 )
 
 #--Multiple pathways--#
@@ -17,7 +19,7 @@ pathways <- c("Wnt Signaling Pathway", "Apoptosis", "MAPK Pathway")
 pathway_desc_list <- lapply(pathways, function(pw) {
   Generate_PathwayDescription(
     pathway = pw,
-    api_key = Sys.getenv("OPENAI_API_KEY")
+    api_key
   )
 })
 
@@ -32,7 +34,7 @@ pathway_desc[1:2]
 # Convert the pathway descriptions into embedding vectors
 embed_mat <- Generate_TextEmbedding(
   text = pathway_desc,
-  api_key = Sys.getenv("OPENAI_API_KEY")
+  api_key
 )
 
 # Check structure
