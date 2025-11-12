@@ -37,6 +37,7 @@ library(DEGEmbedR)
 # Example data included with the package
 load(system.file("examples", "example.rdata", package = "DEGEmbedR"))
 # Objects: `degs`, `embed_mat` (mock custom embeddings for illustration)
+api_key = "<your OPENAI_API_KEY >"
 
 # 1) Compare DEGs vs background against curated pathways (e.g., GO BP)
 res_gobp <- CompareGeneSetEmbeddings(
