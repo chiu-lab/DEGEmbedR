@@ -18,7 +18,7 @@ pathways <- c("Wnt Signaling Pathway", "Apoptosis", "MAPK Pathway")
 # Generate descriptions for each pathway using lapply()
 pathway_desc_list <- lapply(pathways, function(pw) {
   Generate_PathwayDescription(
-    pathway = pw,
+    pathway = pathways,
     api_key
   )
 })
