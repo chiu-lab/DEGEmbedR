@@ -154,7 +154,7 @@ results <- tibble::tibble(
   top10_degs_with_highest_cosine_similarity = character()
 )
 
-
+cp_path <- colnames(cp_dt)
 ###Select consine similarity matrix###
 con_sim_mtrx <- switch(toupper(category),
                        GOBP       = bp_dt,
