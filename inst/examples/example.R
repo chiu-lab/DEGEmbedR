@@ -1,23 +1,62 @@
 ####Example code of DEGEmbedR
 remotes::install_github("chiu-lab/DEGEmbedR")
+setwd("path/to/your/work/directory")
 
 library(DEGEmbedR)
+
+####A. Analyze Built-in Functional Description Databases####
+# Load DEGs from visugromab treatment from Melero et al. Nature 2024. (case study reported in the manuscript)
+load(system.file("examples","example.rdata",package = "DEGEmbedR"))
+print(degs)
+
+# Run DEG-function analysis analysis all GO-BP terms, compared with the background genes probed in the IO panel
+result_tb <- RunDEGEmbedR(
+  degs = degs,
+  bkgs = bkgs,
+  category = "GOBP"
+)
+
+# Run DEG-function analysis for the STING pathway (pre-calculated and included in examples; see sections B and C below),
+# compared with the background genes probed in the IO panel (Fig. 6B in the manuscript)
+result_tb2 <- RunDEGEmbedR(
+  degs = degs,
+  bkgs = bkgs,
+  category = "Customized",
+  embedding_input = embed_mat
+)
+
+# Run DEG-function analysis for the STING pathway (pre-calculated and included in examples; see sections B and C below),
+# compared with all built-in 18K background genes (all protein-coding genes in NCBI) (Fig. 6B in the manuscript)
+result_tb3 <- RunDEGEmbedR(
+  degs = degs,
+  category = "Customized",
+  embedding_input = embed_mat
+)
+
+# View top pathways
+head(result_tb)
+head(result_tb2)
+head(result_tb3)
+
+
+
+####B. Creating and Analyze Custom Functional Descriptions from Names####
+# OpenAI key is required to generate descriptions and embeddings
 api_key <-"YOUR_OPENAI_API_KEY"
-####1. Generate pathway descriptions with GPT-4o####
-#--Single pathway--#
-# Generate a single pathway description
-desc_wnt <- Generate_PathwayDescription(
-  pathway = "Wnt Signaling Pathway",
+
+# Single pathway - generate a single pathway description
+desc_sting <- GeneratePathwayDescription(
+  pathway = "STING Pathway in Cancer Immunotherapy",
   api_key
 )
 
-#--Multiple pathways--#
-# Define the pathway names you want to analyze
-pathways <- c("Wnt Signaling Pathway", "Apoptosis", "MAPK Pathway")
+
+# Multiple pathways - list the pathway names you want to analyze
+pathways <- c("STING Pathway in Cancer Immunotherapy", "Wnt Signaling Pathway", "Apoptosis", "MAPK Pathway")
 
 # Generate descriptions for each pathway using lapply()
 pathway_desc_list <- lapply(pathways, function(pw) {
-  Generate_PathwayDescription(
+  GeneratePathwayDescription(
     pathway = pw,
     api_key
   )
@@ -30,9 +69,10 @@ pathway_desc <- setNames(unlist(pathway_desc_list), pathways)
 names(pathway_desc)
 pathway_desc[1:2]
 
-####2. Convert text descriptions to embeddings####
-# Convert the pathway descriptions into embedding vectors
-embed_mat <- Generate_TextEmbedding(
+
+
+####C.Convert GPT-generated (from section B) or custom functional descriptions to embeddings####
+embed_mat <- GenerateTextEmbedding(
   text = pathway_desc,
   api_key
 )
@@ -41,18 +81,5 @@ embed_mat <- Generate_TextEmbedding(
 dim(embed_mat)
 rownames(embed_mat)
 
-####3. Perform enrichment or similarity testing####
-# Select random genes as an example
-load(system.file("examples","example.rdata",package = "DEGEmbedR"))
-print(degs)
-
-# Run the comparison using the custom embeddings
-result_tb <- CompareGeneSetEmbeddings(
-  degs = degs,
-  category = "Customized",
-  embedding_input = embed_mat
-)
-
-# View top pathways
-head(result_tb)
+# Then run RunDEGEmbedR with category = "Customized" and embedding_input = embed_mat (refer to section A)
 
