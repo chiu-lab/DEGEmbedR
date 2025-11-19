@@ -1,56 +1,58 @@
-#' Compare DEG vs. background cosine similarities across pathways/MOAs
+#' Compare DEG vs. background cosine similarities across functions, pathways, or MOAs
 #'
 #' @description
-#' For each pathway (or user-supplied term embedding), this function compares the
-#' cosine similarity distribution of differentially expressed genes (DEGs) to that
-#' of background genes and summarizes the statistical evidence for enrichment.
+#' For each built-in biological function or user-supplied term embedding, this function compares the
+#' cosine similarity distributions of differentially expressed genes (DEGs) and background genes,
+#' summarizing the statistical evidence for a functional relationship.
 #'
-#' The function returns the one-tailed Wilcoxon rank-sum test p-value
-#' (testing whether DEGs > background), median cosine similarities for DEGs
-#' and background genes, their median difference, Cliff’s delta with a 95% confidence
-#' interval, and the top 10 DEGs with the highest cosine similarity.
+#' The function returns the one-tailed Wilcoxon rank-sum test p-value (testing whether DEGs >
+#' background), the median cosine similarities for DEGs and background genes, their median
+#' difference, Cliff’s delta with a 95% confidence interval, and the top 10 DEGs with the highest
+#' similarity to the function.
 #'
 #' @details
-#' This implements the analysis used in the paper's applications (e.g., testing
-#' pathway/MOA hypotheses for STING pathway and drug mechanisms). It supports
-#' curated similarity matrices distributed with the package (GO BP, MSigDB C2
-#' subcollections BIOCARTA/KEGG/PID/REACTOME/WP, and MOA) as well as a
-#' "Customized" mode that accepts user-supplied pathway/term embeddings.
+#' This function implements the analysis workflow described in the DEGEmbedR vignette and
+#' manuscript (e.g., enrichment testing for the STING pathway or drug mechanism hypotheses). It
+#' supports curated functional collections included with the package (MSigDB GO Biological
+#' Processes; MSigDB C2 pathways including BIOCARTA, KEGG, PID, REACTOME, and WP; and mechanisms
+#' of action [MOA]), as well as a \code{"Customized"} mode that accepts user-supplied pathway or
+#' function embeddings.
 #'
+#' @param degs Character vector. Differentially expressed genes (DEGs). After intersecting with
+#'   the built-in gene universe (~18,000 genes), the number of matched DEGs must be between 15 and 500.
+#' @param bkgs Character vector. Background genes (optional). If \code{NULL}, the built-in gene
+#'   universe—comprising ~18k human protein-coding genes from the NCBI Gene database—is used
+#'   as the background.
+#' @param category Character. Functional database or mode to use. Must be one of:
+#'   \code{"GOBP"}, \code{"C2CP_all"}, \code{"BIOCARTA"}, \code{"KEGG"}, \code{"PID"},
+#'   \code{"REACTOME"}, \code{"WP"}, \code{"MOA"}, or \code{"Customized"} (case-insensitive).
+#' @param embedding_input Numeric matrix or data frame of term embeddings (only required if
+#'   \code{category = "Customized"}). Each row is a term, each column an embedding dimension
+#'   (length = 3072). Row names are used as term labels.
+#' @param output Logical. Whether to save the result as a timestamped tab-delimited \code{.txt} file.
+#'   Default: \code{TRUE}.
 #'
-#' @param degs Differentially expressed genes (DEGs). After intersecting with
-#'   the built-in set of 18K genes, the number of matched DEGs must be in 15~500.
-#' @param bkgs Background gene symbols (optional). If
-#'   \code{NULL},  the built-in set of 18K genes is used.
-#' @param category Select pathway/MOAs/customized categories to analyze
-#'   one of \code{"GOBP"}, \code{"C2CP_all"}, \code{"BIOCARTA"}, \code{"KEGG"},
-#'   \code{"PID"}, \code{"REACTOME"}, \code{"WP"}, \code{"MOA"}, or
-#'   \code{"Customized"} (case-insensitive).
-#' @param embedding_input Numeric matrix or data frame containing pathway or term
-#'   embeddings (required when \code{category = "Customized"}). Rows represent terms,
-#'   columns represent embedding dimensions (length = 3072). Row names are used as term labels.
-#' @param output Logical. The result will be saved as a .txt file (Default: TRUE).
-#'
-#' @return A \link[tibble]{tibble} with one row per pathway/term:
+#' @return A \link[tibble]{tibble} with one row per pathway or term, including:
 #' \describe{
-#'   \item{\code{name}}{Pathway/term name}
+#'   \item{\code{name}}{Pathway or term name}
 #'   \item{\code{p_value_MWN_one_tailed}}{One-tailed Wilcoxon p-value (DEGs > background)}
-#'   \item{\code{median_cosine_similarity_degs}}{Median similarity in DEGs}
-#'   \item{\code{median_cosine_similarity_bkgs}}{Median similarity in background}
-#'   \item{\code{diff_cosine_similarity.}}{Median(DEGs) - Median(Background)}
+#'   \item{\code{median_cosine_similarity_degs}}{Median cosine similarity among DEGs}
+#'   \item{\code{median_cosine_similarity_bkgs}}{Median cosine similarity among background genes}
+#'   \item{\code{diff_cosine_similarity}}{Difference: median(DEGs) – median(background)}
 #'   \item{\code{cliffs_delta}}{Cliff's delta effect size}
-#'   \item{\code{cliffs_delta_ci_95}}{95% CI for Cliff's delta}
-#'   \item{\code{cliffs_delta_magnitude}}{Magnitude category}
-#'   \item{\code{top10_degs_with_highest_cosine_similarity}}{Top 10 DEGs with values}
+#'   \item{\code{cliffs_delta_ci_95}}{95% confidence interval for Cliff's delta}
+#'   \item{\code{cliffs_delta_magnitude}}{Magnitude category (e.g., negligible, small, medium, large)}
+#'   \item{\code{top10_degs_with_highest_cosine_similarity}}{Top 10 DEGs ranked by cosine similarity}
 #' }
 #'
-#' @section A tab-delimited results file named like:
-#'  \code{"result_YYYY-MM-DD-HHMMSS.txt"} is written to the working directory.
+#' @section Output File:
+#' A tab-delimited results file named like \code{"result_YYYY-MM-DD-HHMMSS.txt"} will be written
+#' to the working directory if \code{output = TRUE}.
 #'
 #' @examples
 #' \dontrun{
-#' # Customized example with mock embeddings (no on-disk .Rdata needed)
-#' load(system.file("examples","example.rdata",package = "DEGEmbedR"))
+#' # Example using user-supplied embeddings
+#' load(system.file("examples", "example.rdata", package = "DEGEmbedR"))
 #' head(embed_mat)
 #' length(degs)
 #' res <- RunDEGEmbedR(
@@ -62,8 +64,11 @@
 #' }
 #'
 #' @seealso
-#' \code{\link[stats]{wilcox.test}}, \code{\link[effsize]{cliff.delta}},
-#' \code{\link[tibble]{tibble}}, \code{\link[stringr]{str_extract}}
+#'   \code{\link[stats]{wilcox.test}},
+#'   \code{\link[effsize]{cliff.delta}},
+#'   \code{\link[tibble]{tibble}},
+#'   \code{\link[stringr]{str_extract}}
+#'
 #' @importFrom stats wilcox.test
 #' @importFrom stringr str_extract
 #' @keywords enrichment embeddings similarity statistics effect-size

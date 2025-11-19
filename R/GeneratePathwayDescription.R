@@ -1,26 +1,37 @@
-#' Generate a pathway/MOA description using OpenAI API
+#' Generate a function description using GPT-4o via the OpenAI API
 #'
 #' @description
-#' Queries the OpenAI Chat Completions API to generate a short descriptive paragraph summarizing the function of a given pathway.
+#' Generates a concise biological description for a pathway or mechanism of action (MOA) by
+#' querying the OpenAI Chat Completions API. This function is useful for creating standardized
+#' text summaries that can later be embedded and used for downstream gene–function analysis.
 #'
-#' @param pathway Character. The name of the pathway/ MOA.
-#' @param api_key Character. OpenAI API key.
-#' @param api_url Character. OpenAI API URL. Default: \code{"https://api.openai.com/v1/chat/completions"}.
-#' @param request_timeout_sec Numeric. Request timeout in seconds. Default: 60.
-#' @param output Logical. The result will be saved as a .txt file (Default: TRUE).
+#' @param pathway Character. The name of the function, pathway, or MOA to summarize.
+#' @param api_key Character. OpenAI API key (obtainable from https://openai.com/api/).
+#' @param api_url Character. URL for the OpenAI Chat Completions API.
+#'   Default: \code{"https://api.openai.com/v1/chat/completions"}.
+#' @param request_timeout_sec Numeric. Request timeout (seconds). Default: 60.
+#' @param output Logical. Whether to save the generated description as a timestamped \code{.txt}
+#'   file. Default: \code{TRUE}.
 #'
-#' @return A character vector of length 1 containing the generated pathway description.
+#' @return A character vector of length 1 containing the generated pathway or MOA description.
+#'
 #' @details
-#' The description is printed, returned, and saved as a timestamped text file.
+#' The generated description is printed to the console, returned as a character string, and
+#' optionally saved as a timestamped text file in the working directory.
+#'
 #' @examples
 #' \dontrun{
-#' desc <- GenerateDescription(
-#'   pathway = "Gluconeogenesis",
+#' desc <- GeneratePathwayDescription(
+#'   pathway = "STING Pathway in Cancer Immunotherapy",
 #'   api_key = "OPENAI_API_KEY"
 #' )
 #' print(desc)
 #' }
-#' @seealso \code{\link[httr]{POST}}, \code{\link[jsonlite]{fromJSON}}
+#'
+#' @seealso
+#'   \code{\link[httr]{POST}},
+#'   \code{\link[jsonlite]{fromJSON}}
+#'
 #' @export
 
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/GeneratePathwayDescription.R
 \name{GeneratePathwayDescription}
 \alias{GeneratePathwayDescription}
-\title{Generate a pathway/MOA description using OpenAI API}
+\title{Generate a function description using GPT-4o via the OpenAI API}
 \usage{
 GeneratePathwayDescription(
   pathway,
@@ -13,34 +13,41 @@ GeneratePathwayDescription(
 )
 }
 \arguments{
-\item{pathway}{Character. The name of the pathway/ MOA.}
+\item{pathway}{Character. The name of the function, pathway, or MOA to summarize.}
 
-\item{api_key}{Character. OpenAI API key.}
+\item{api_key}{Character. OpenAI API key (obtainable from https://openai.com/api/).}
 
-\item{api_url}{Character. OpenAI API URL. Default: \code{"https://api.openai.com/v1/chat/completions"}.}
+\item{api_url}{Character. URL for the OpenAI Chat Completions API.
+Default: \code{"https://api.openai.com/v1/chat/completions"}.}
 
-\item{request_timeout_sec}{Numeric. Request timeout in seconds. Default: 60.}
+\item{request_timeout_sec}{Numeric. Request timeout (seconds). Default: 60.}
 
-\item{output}{Logical. The result will be saved as a .txt file (Default: TRUE).}
+\item{output}{Logical. Whether to save the generated description as a timestamped \code{.txt}
+file. Default: \code{TRUE}.}
 }
 \value{
-A character vector of length 1 containing the generated pathway description.
+A character vector of length 1 containing the generated pathway or MOA description.
 }
 \description{
-Queries the OpenAI Chat Completions API to generate a short descriptive paragraph summarizing the function of a given pathway.
+Generates a concise biological description for a pathway or mechanism of action (MOA) by
+querying the OpenAI Chat Completions API. This function is useful for creating standardized
+text summaries that can later be embedded and used for downstream gene–function analysis.
 }
 \details{
-The description is printed, returned, and saved as a timestamped text file.
+The generated description is printed to the console, returned as a character string, and
+optionally saved as a timestamped text file in the working directory.
 }
 \examples{
 \dontrun{
-desc <- GenerateDescription(
-  pathway = "Gluconeogenesis",
+desc <- GeneratePathwayDescription(
+  pathway = "STING Pathway in Cancer Immunotherapy",
   api_key = "OPENAI_API_KEY"
 )
 print(desc)
 }
+
 }
 \seealso{
-\code{\link[httr]{POST}}, \code{\link[jsonlite]{fromJSON}}
+\code{\link[httr]{POST}},
+\code{\link[jsonlite]{fromJSON}}
 }
