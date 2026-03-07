@@ -4,11 +4,11 @@
 
 # RDS lists
 .required_rds_files <- c(
-  "BP_15-500_similarity_text-embedding-3-large_2024110801.rds",
-  "CP_15-500_similarity_text-embedding-3-large_2024110801.rds",
-  "gene_geneset_moa_drug_function_similarity_text-embedding-3-large_2025031701.rds",
-  "gene_embedding_2024110801.rds",
-  "gene_list.rds"
+  "cp_pathway_retrieval_similarity.rds",
+  "bp_function_retrieval_similarity.rds",
+  "pathway_retrieval_2023_top40_embedding_2026020901.rds",
+  "function_retrieval_2023_top40_embedding_2026020901.rds",
+  "GSAIPrompt.rds"
 )
 
 # tool function
