@@ -51,7 +51,7 @@
 #'   OpenAI API documentation: \url{https://platform.openai.com/docs/api-reference/embeddings}
 #'
 #' @keywords OpenAI embedding text-representation bioinformatics
-#' @export
+
 
 GenerateTextEmbedding <- function(
     text,

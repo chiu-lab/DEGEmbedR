@@ -1,4 +1,4 @@
-#' Compare DEG vs. background cosine similarities across functions, pathways, or MOAs
+#' Compare DEG vs. background cosine similarities across biological functions or pathways
 #'
 #' @description
 #' For each built-in biological function or user-supplied term embedding, this function compares the
@@ -11,25 +11,23 @@
 #' similarity to the function.
 #'
 #' @details
-#' This function implements the analysis workflow described in the DEGEmbedR vignette and
-#' manuscript (e.g., enrichment testing for the STING pathway or drug mechanism hypotheses). It
-#' supports curated functional collections included with the package (MSigDB GO Biological
-#' Processes; MSigDB C2 pathways including BIOCARTA, KEGG, PID, REACTOME, and WP; and mechanisms
-#' of action [MOA]), as well as a \code{"Customized"} mode that accepts user-supplied pathway or
-#' function embeddings.
+#' \code{RunDEGEmbedR()} implements the analysis workflow described in the DEGEmbedR vignette and manuscript.
+#' It supports curated functional collections included with the package, including MSigDB GO Biological
+#' Processes and MSigDB C2 pathway collections (BIOCARTA, KEGG, PID, REACTOME, and WikiPathways).
+#' In addition, the GSAI mode generates an AI-derived functional hypothesis from the input DEGs and
+#' evaluates its similarity to gene embeddings to assess potential biological mechanisms.
 #'
-#' @param degs Character vector. Differentially expressed genes (DEGs). After intersecting with
+#'
+#' @param degs Character. Differential expressed genes (DEGs). After intersecting with
 #'   the built-in gene universe (~18,000 genes), the number of matched DEGs must be between 15 and 500.
-#' @param bkgs Character vector. Background genes (optional). If \code{NULL}, the built-in gene
+#' @param bkgs Character. Background genes (optional). If \code{NULL}, the built-in gene
 #'   universe—comprising ~18k human protein-coding genes from the NCBI Gene database—is used
 #'   as the background.
 #' @param category Character. Functional database or mode to use. Must be one of:
 #'   \code{"GOBP"}, \code{"C2CP_all"}, \code{"BIOCARTA"}, \code{"KEGG"}, \code{"PID"},
-#'   \code{"REACTOME"}, \code{"WP"}, \code{"MOA"}, or \code{"Customized"} (case-insensitive).
-#' @param embedding_input Numeric matrix or data frame of term embeddings (only required if
-#'   \code{category = "Customized"}). Each row is a term, each column an embedding dimension
-#'   (length = 3072). Row names are used as term labels.
-#' @param output Logical. Whether to save the result as a timestamped tab-delimited \code{.txt} file.
+#'   \code{"REACTOME"}, \code{"WP"}, or \code{"GSAI"} (case-insensitive).
+#' @param api_key Character. OpenAI API key (obtainable from https://openai.com/api/).
+#' @param output Logical. Whether to save the result as a time-stamped tab-delimited \code{.txt} file.
 #'   Default: \code{TRUE}.
 #'
 #' @return A \link[tibble]{tibble} with one row per pathway or term, including:
@@ -51,16 +49,36 @@
 #'
 #' @examples
 #' \dontrun{
-#' # Example using user-supplied embeddings
+#' api_key <- "YOUR_OPENAI_API_KEY"
+#'
 #' load(system.file("examples", "example.rdata", package = "DEGEmbedR"))
-#' head(embed_mat)
 #' length(degs)
-#' res <- RunDEGEmbedR(
+#' length(bkgs)
+#'
+#' # (A) Using a curated functional collection
+#' res_tb1 <- RunDEGEmbedR(
 #'   degs = degs,
-#'   category = "Customized",
-#'   embedding_input = embed_mat
+#'   category ="GOBP",
+#'   api_key = api_key
 #' )
-#' head(res)
+#' head(res_tb1)
+#'
+#' # (B) Using an AI-derived functional hypothesis
+#' res_tb2 <- RunDEGEmbedR(
+#'   degs = degs,
+#'   category = "GSAI",
+#'   api_key = api_key
+#' )
+#' head(res_tb2)
+#'
+#' # (C) Using user-supplied background genes
+#' res_tb3 <- RunDEGEmbedR(
+#'   degs = degs,
+#'   bkgs = bkgs,
+#'   category = "GOBP",
+#'   api_key = api_key
+#' )
+#' head(res_tb3)
 #' }
 #'
 #' @seealso
@@ -77,18 +95,36 @@
 
 
 RunDEGEmbedR <- function(degs,
-                         bkgs=NULL,
-                         category = c("GOBP","C2CP_all","BIOCARTA", "KEGG","PID","REACTOME", "WP", "MOA","Customized"),
-                         embedding_input=NULL,
+                         bkgs = NULL,
+                         category = c("GOBP","C2CP_all","BIOCARTA", "KEGG","PID","REACTOME", "WP", "GSAI"),
+                         api_key,
                          output = TRUE){
 
+  #Input checks
+  if (missing(degs) || is.null(degs) || identical(degs, "")) stop("DEGs is required.")
+  if (missing(api_key) || is.null(api_key) || identical(api_key, "")) stop("Missing API key.")
+  if (missing(category) || is.null(category) || identical(category, "")) stop("Category is required.")
 
   ###Load data###
-  bp_dt    <- readRDS(data_path("BP_15-500_similarity_text-embedding-3-large_2024110801.rds"))
-  cp_dt    <- readRDS(data_path("CP_15-500_similarity_text-embedding-3-large_2024110801.rds"))
-  moa_gene_dt <- readRDS(data_path("gene_geneset_moa_drug_function_similarity_text-embedding-3-large_2025031701.rds"))
-  gene_dt  <- readRDS(data_path("gene_embedding_2024110801.rds"))
-  gene_list <- readRDS(data_path("gene_list.rds"))
+  gsai_prompt <- readRDS(data_path("GSAIPrompt.rds"))
+  bp_dt    <- readRDS(data_path("bp_function_retrieval_similarity.rds"))
+  cp_dt    <- readRDS(data_path("cp_pathway_retrieval_similarity.rds"))
+  rag_function <- readRDS(data_path("function_retrieval_2023_top40_embedding_2026020901.rds"))
+  rag_pathway <- readRDS(data_path("pathway_retrieval_2023_top40_embedding_2026020901.rds"))
+
+  ##category type##
+  cat_upper <- toupper(category)
+
+  if (cat_upper %in% c("GOBP", "GSAI")) {
+    source_df <- rag_function
+  } else if (cat_upper %in% c("C2CP_ALL", "BIOCARTA", "KEGG", "PID", "REACTOME", "WP")) {
+    source_df <- rag_pathway
+  } else {
+    stop("Unknown category")
+  }
+
+  gene_dt   <- source_df[, -1]
+  gene_list <- source_df$Name
 
   ###Require R packages###
   if (!requireNamespace("lsa", quietly = TRUE))     stop("Package 'lsa' is required.")
@@ -122,23 +158,24 @@ RunDEGEmbedR <- function(degs,
   }
 
 
-  ###Check category#
-  if(is.null(category)){
-    stop("Category is required")
-  }
 
-  ###Customized###
-  ##Generate cosine similarity table
+  ###GSAI###
 
-  if(toupper(category) == toupper("Customized")){
-    if(is.null(embedding_input)){
-      stop("Missing embedding input")
-    }
+  if(toupper(category) == toupper("GSAI")){
+  ##Run GSAI##
+    gsai <- RunGSAI(degs = match_degs,api_key = api_key,gsai_prompt = gsai_prompt,output = TRUE)
+
+  ##Generate Text embedding##
+    embed_mat <- GenerateTextEmbedding(
+      text = gsai,
+      api_key,
+      output =FALSE
+    )
 
     #Cosine similarity calculation
     # normalize rows
     gene_norm <- gene_dt / sqrt(rowSums(gene_dt * gene_dt))
-    pth_norm  <- embedding_input / sqrt(rowSums(embedding_input * embedding_input))
+    pth_norm  <- embed_mat / sqrt(rowSums(embed_mat * embed_mat))
     gene_norm <- as.matrix(gene_norm)
     mode(gene_norm) <- "numeric"
 
@@ -163,17 +200,17 @@ RunDEGEmbedR <- function(degs,
   )
 
   cp_path <- colnames(cp_dt)
+
   ###Select consine similarity matrix###
   con_sim_mtrx <- switch(toupper(category),
                          GOBP       = bp_dt,
-                         C2CP_all   = cp_dt,
+                         C2CP_ALL   = cp_dt,
                          BIOCARTA   = cp_dt[,which(str_extract(cp_path, "^[^_]+") == "BIOCARTA")],
                          KEGG       = cp_dt[,which(str_extract(cp_path, "^[^_]+") == "KEGG")],
                          PID        = cp_dt[,which(str_extract(cp_path, "^[^_]+") == "PID")],
                          REACTOME   = cp_dt[,which(str_extract(cp_path, "^[^_]+") == "REACTOME")],
                          WP         = cp_dt[,which(str_extract(cp_path, "^[^_]+") == "WP")],
-                         MOA        = moa_gene_dt,
-                         CUSTOMIZED = custom_matrix,
+                         GSAI       = custom_matrix,
                          stop("Unknown category")
   )
 

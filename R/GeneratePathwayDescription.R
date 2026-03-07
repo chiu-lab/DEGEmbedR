@@ -32,7 +32,6 @@
 #'   \code{\link[httr]{POST}},
 #'   \code{\link[jsonlite]{fromJSON}}
 #'
-#' @export
 
 
 GeneratePathwayDescription <- function(

@@ -2,34 +2,31 @@
 % Please edit documentation in R/RunDEGEmbedR.R
 \name{RunDEGEmbedR}
 \alias{RunDEGEmbedR}
-\title{Compare DEG vs. background cosine similarities across functions, pathways, or MOAs}
+\title{Compare DEG vs. background cosine similarities across biological functions or pathways}
 \usage{
 RunDEGEmbedR(
   degs,
   bkgs = NULL,
-  category = c("GOBP", "C2CP_all", "BIOCARTA", "KEGG", "PID", "REACTOME", "WP", "MOA",
-    "Customized"),
-  embedding_input = NULL,
+  category = c("GOBP", "C2CP_all", "BIOCARTA", "KEGG", "PID", "REACTOME", "WP", "GSAI"),
+  api_key,
   output = TRUE
 )
 }
 \arguments{
-\item{degs}{Character vector. Differentially expressed genes (DEGs). After intersecting with
+\item{degs}{Character. Differential expressed genes (DEGs). After intersecting with
 the built-in gene universe (~18,000 genes), the number of matched DEGs must be between 15 and 500.}
 
-\item{bkgs}{Character vector. Background genes (optional). If \code{NULL}, the built-in gene
+\item{bkgs}{Character. Background genes (optional). If \code{NULL}, the built-in gene
 universe—comprising ~18k human protein-coding genes from the NCBI Gene database—is used
 as the background.}
 
 \item{category}{Character. Functional database or mode to use. Must be one of:
 \code{"GOBP"}, \code{"C2CP_all"}, \code{"BIOCARTA"}, \code{"KEGG"}, \code{"PID"},
-\code{"REACTOME"}, \code{"WP"}, \code{"MOA"}, or \code{"Customized"} (case-insensitive).}
+\code{"REACTOME"}, \code{"WP"}, or \code{"GSAI"} (case-insensitive).}
 
-\item{embedding_input}{Numeric matrix or data frame of term embeddings (only required if
-\code{category = "Customized"}). Each row is a term, each column an embedding dimension
-(length = 3072). Row names are used as term labels.}
+\item{api_key}{Character. OpenAI API key (obtainable from https://openai.com/api/).}
 
-\item{output}{Logical. Whether to save the result as a timestamped tab-delimited \code{.txt} file.
+\item{output}{Logical. Whether to save the result as a time-stamped tab-delimited \code{.txt} file.
 Default: \code{TRUE}.}
 }
 \value{
@@ -57,12 +54,11 @@ difference, Cliff’s delta with a 95\% confidence interval, and the top 10 DEGs
 similarity to the function.
 }
 \details{
-This function implements the analysis workflow described in the DEGEmbedR vignette and
-manuscript (e.g., enrichment testing for the STING pathway or drug mechanism hypotheses). It
-supports curated functional collections included with the package (MSigDB GO Biological
-Processes; MSigDB C2 pathways including BIOCARTA, KEGG, PID, REACTOME, and WP; and mechanisms
-of action \link{MOA}), as well as a \code{"Customized"} mode that accepts user-supplied pathway or
-function embeddings.
+\code{RunDEGEmbedR()} implements the analysis workflow described in the DEGEmbedR vignette and manuscript.
+It supports curated functional collections included with the package, including MSigDB GO Biological
+Processes and MSigDB C2 pathway collections (BIOCARTA, KEGG, PID, REACTOME, and WikiPathways).
+In addition, the GSAI mode generates an AI-derived functional hypothesis from the input DEGs and
+evaluates its similarity to gene embeddings to assess potential biological mechanisms.
 }
 \section{Output File}{
 
@@ -72,16 +68,36 @@ to the working directory if \code{output = TRUE}.
 
 \examples{
 \dontrun{
-# Example using user-supplied embeddings
+api_key <- "YOUR_OPENAI_API_KEY"
+
 load(system.file("examples", "example.rdata", package = "DEGEmbedR"))
-head(embed_mat)
 length(degs)
-res <- RunDEGEmbedR(
+length(bkgs)
+
+# (A) Using a curated functional collection
+res_tb1 <- RunDEGEmbedR(
   degs = degs,
-  category = "Customized",
-  embedding_input = embed_mat
+  category ="GOBP",
+  api_key = api_key
 )
-head(res)
+head(res_tb1)
+
+# (B) Using an AI-derived functional hypothesis
+res_tb2 <- RunDEGEmbedR(
+  degs = degs,
+  category = "GSAI",
+  api_key = api_key
+)
+head(res_tb2)
+
+# (C) Using user-supplied background genes
+res_tb3 <- RunDEGEmbedR(
+  degs = degs,
+  bkgs = bkgs,
+  category = "GOBP",
+  api_key = api_key
+)
+head(res_tb3)
 }
 
 }
