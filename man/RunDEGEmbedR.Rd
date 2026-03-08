@@ -2,13 +2,13 @@
 % Please edit documentation in R/RunDEGEmbedR.R
 \name{RunDEGEmbedR}
 \alias{RunDEGEmbedR}
-\title{Compare DEG vs. background cosine similarities across biological functions or pathways}
+\title{Compare DEG vs. background cosine similarities across curated or de novo biological functions or pathways}
 \usage{
 RunDEGEmbedR(
   degs,
   bkgs = NULL,
   category = c("GOBP", "C2CP_all", "BIOCARTA", "KEGG", "PID", "REACTOME", "WP", "GSAI"),
-  api_key,
+  api_key = NULL,
   output = TRUE
 )
 }
@@ -16,15 +16,14 @@ RunDEGEmbedR(
 \item{degs}{Character. Differential expressed genes (DEGs). After intersecting with
 the built-in gene universe (~18,000 genes), the number of matched DEGs must be between 15 and 500.}
 
-\item{bkgs}{Character. Background genes (optional). If \code{NULL}, the built-in gene
-universe—comprising ~18k human protein-coding genes from the NCBI Gene database—is used
-as the background.}
+\item{bkgs}{Character. Optional customized background genes such as targeted arrays. If \code{NULL}, a built-in gene
+universe (~18k human protein-coding genes from the NCBI Gene database) is used.}
 
 \item{category}{Character. Functional database or mode to use. Must be one of:
 \code{"GOBP"}, \code{"C2CP_all"}, \code{"BIOCARTA"}, \code{"KEGG"}, \code{"PID"},
 \code{"REACTOME"}, \code{"WP"}, or \code{"GSAI"} (case-insensitive).}
 
-\item{api_key}{Character. OpenAI API key (obtainable from https://openai.com/api/).}
+\item{api_key}{Character (optional). OpenAI API key (https://openai.com/api/). Required only for the \code{GSAI} mode.}
 
 \item{output}{Logical. Whether to save the result as a time-stamped tab-delimited \code{.txt} file.
 Default: \code{TRUE}.}
@@ -32,10 +31,10 @@ Default: \code{TRUE}.}
 \value{
 A \link[tibble]{tibble} with one row per pathway or term, including:
 \describe{
-\item{\code{name}}{Pathway or term name}
+\item{\code{name}}{Function or pathway name}
 \item{\code{p_value_MWN_one_tailed}}{One-tailed Wilcoxon p-value (DEGs > background)}
-\item{\code{median_cosine_similarity_degs}}{Median cosine similarity among DEGs}
-\item{\code{median_cosine_similarity_bkgs}}{Median cosine similarity among background genes}
+\item{\code{median_cosine_similarity_degs}}{Median gene-function cosine similarity among DEGs}
+\item{\code{median_cosine_similarity_bkgs}}{Median gene-function cosine similarity among background genes}
 \item{\code{diff_cosine_similarity}}{Difference: median(DEGs) – median(background)}
 \item{\code{cliffs_delta}}{Cliff's delta effect size}
 \item{\code{cliffs_delta_ci_95}}{95\% confidence interval for Cliff's delta}
@@ -44,9 +43,9 @@ A \link[tibble]{tibble} with one row per pathway or term, including:
 }
 }
 \description{
-For each built-in biological function or user-supplied term embedding, this function compares the
-cosine similarity distributions of differentially expressed genes (DEGs) and background genes,
-summarizing the statistical evidence for a functional relationship.
+For each built-in or LLM-derived de novo biological function, this function compares the
+gene-function cosine similarity distributions of differentially expressed genes (DEGs)
+and background genes, summarizing the statistical evidence for DEG-function relationships.
 
 The function returns the one-tailed Wilcoxon rank-sum test p-value (testing whether DEGs >
 background), the median cosine similarities for DEGs and background genes, their median
@@ -54,11 +53,12 @@ difference, Cliff’s delta with a 95\% confidence interval, and the top 10 DEGs
 similarity to the function.
 }
 \details{
-\code{RunDEGEmbedR()} implements the analysis workflow described in the DEGEmbedR vignette and manuscript.
-It supports curated functional collections included with the package, including MSigDB GO Biological
-Processes and MSigDB C2 pathway collections (BIOCARTA, KEGG, PID, REACTOME, and WikiPathways).
-In addition, the GSAI mode generates an AI-derived functional hypothesis from the input DEGs and
-evaluates its similarity to gene embeddings to assess potential biological mechanisms.
+\code{RunDEGEmbedR()} is the main function that implements the analysis workflow described
+in the DEGEmbedR vignette and manuscript. It supports curated functional collections included
+with the package, including MSigDB GO Biological Processes (BP) and MSigDB C2 pathway collections
+(BIOCARTA, KEGG, PID, REACTOME, and WikiPathways). In addition, the GSAI mode generates AI-derived
+de novo functional hypotheses from the input DEGs and then evaluates the similarity between the
+de novo functions to DEGs based on embeddings to statistically validate these functional hypotheses.
 }
 \section{Output File}{
 
@@ -66,41 +66,6 @@ A tab-delimited results file named like \code{"result_YYYY-MM-DD-HHMMSS.txt"} wi
 to the working directory if \code{output = TRUE}.
 }
 
-\examples{
-\dontrun{
-api_key <- "YOUR_OPENAI_API_KEY"
-
-load(system.file("examples", "example.rdata", package = "DEGEmbedR"))
-length(degs)
-length(bkgs)
-
-# (A) Using a curated functional collection
-res_tb1 <- RunDEGEmbedR(
-  degs = degs,
-  category ="GOBP",
-  api_key = api_key
-)
-head(res_tb1)
-
-# (B) Using an AI-derived functional hypothesis
-res_tb2 <- RunDEGEmbedR(
-  degs = degs,
-  category = "GSAI",
-  api_key = api_key
-)
-head(res_tb2)
-
-# (C) Using user-supplied background genes
-res_tb3 <- RunDEGEmbedR(
-  degs = degs,
-  bkgs = bkgs,
-  category = "GOBP",
-  api_key = api_key
-)
-head(res_tb3)
-}
-
-}
 \seealso{
 \code{\link[stats]{wilcox.test}},
 \code{\link[effsize]{cliff.delta}},
