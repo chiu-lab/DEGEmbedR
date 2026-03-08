@@ -6,6 +6,7 @@ Instead of relying on predefined gene sets (e.g., GO or KEGG), DEGEmbedR embeds 
 ---
 
 ## Installation
+**⚠️ We have recently updated to version `1.2.0`. Please re-install if you have previously installed it:**
 ```r
 # install.packages("remotes")
 remotes::install_github("chiu-lab/DEGEmbedR")
@@ -34,12 +35,12 @@ file.edit(system.file("examples", "example.R", package = "DEGEmbedR"))
 ---
 
 # Overview
-The main function `RunDEGEmbedR()` provides a **gene-set–free statistical framework** for evaluating DEG-function relationships using gene–function cosine similarity distributions between LLM-derived gene and function embeddings. It supports analysis against curated functional annotations as well as AI-generated de novo functional hypotheses. Prebuilt background genes (approximately 18,000 human protein-coding genes) are included for contrast with the DEGs. Users can also upload customized background genes if the DEGs are derived from a targeted panel, or other specialized datasets.
+The main function `RunDEGEmbedR()` provides a **gene-set–free statistical framework** for evaluating DEG-function relationships using gene–function cosine similarity distributions between LLM-derived gene and function embeddings. It supports analysis against curated functional annotations as well as AI-generated *de novo* functional hypotheses. **Prebuilt background genes** (approximately 18,000 human protein-coding genes) are included for contrast with the DEGs. Users can also upload customized background genes if the DEGs are derived from a targeted panel, or other specialized datasets.
 
 The package supports two complementary workflows, both accessible via the main function `RunDEGEmbedR`:
 
 1. **Analyze DEGs using built-in functional annotation databases**  
-   GO-BP (biological processes) and CP (BioCarta, KEGG, PID, Reactome, WikiPathways).
+   GO-BP (Biological Processes) and CP (BioCarta, KEGG, PID, Reactome, WikiPathways).
 
 2. **Generate *de novo* functional hypotheses of DEGs using an LLM and analyze their statistical significance (requires OpenAI API key)**  
    GSAI (Hu *et al*. *Nature Methods* 2025), re-implemented using GPT-4o.
@@ -59,10 +60,10 @@ DEGEmbedR reports:
 - Cliff’s delta and 95% CI
 - Top DEGs driving the signal
 
-### **✔ Works with curated functions, custom names, or LLM-generated text**
+### **✔ Works with curated functions and LLM-generated functional hypotheses**
 You can test:
-- Built-in biological processes and pathways 
-- LLM-generated biological hypotheses
+- Built-in biological processes and pathways for integration and comparison with existing gene set analysis methods
+- LLM-generated biological hypotheses for *de novo* functions
 
 ### **✔ Reproducible & offline**
 Only the LLM generation mode (`category = "GSAI"`) requires internet and OpenAI API key. All statistical tests run **offline**.
@@ -76,7 +77,7 @@ Only the LLM generation mode (`category = "GSAI"`) requires internet and OpenAI 
 This workflow tests your DEG list against curated functional databases such as **GO Biological Processes** and **canonical pathways**.
 
 ```r
-# Example DEG list: NeST: 79 (ATM-Dependent DNA Repair)
+# Example DEG list: NeST: 79 (ATM-Dependent DNA Repair), sourced from https://github.com/ncbi-nlp/GeneAgent/tree/main/Datasets/NeST
 NeST79 <- c('ATM', 'AURKA', 'BARD1', 'BLM', 'BRCA1',
             'BRCA2', 'BRIP1', 'BUB1B', 'CDC73', 'CHEK1',
             'FANCA', 'FANCD2', 'MDC1', 'MDM2', 'MRE11',
@@ -98,8 +99,9 @@ Use this workflow when you want to test a biological function that is **not** pa
 
 ### Generate description
 ```r
-# Example DEG list: NeST: 105 (Ubiquitin Regulation of p53 Activity)
+# Example DEG list: NeST: 105 (Ubiquitin Regulation of p53 Activity), sourced from https://github.com/ncbi-nlp/GeneAgent/tree/main/Datasets/NeST
 NeST105 <- c('CUL3', 'ELOC', 'FBXW7', 'HSP90AA1', 'MDM2', 'SKP1', 'STK11', 'TNF', 'VHL')
+
 result_tb2 <- RunDEGEmbedR(
   degs = NeST105,
   category = "GSAI",
