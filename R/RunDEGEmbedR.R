@@ -1,9 +1,9 @@
-#' Compare DEG vs. background cosine similarities across biological functions or pathways
+#' Compare DEG vs. background cosine similarities across curated or de novo biological functions or pathways
 #'
 #' @description
-#' For each built-in biological function or user-supplied term embedding, this function compares the
-#' cosine similarity distributions of differentially expressed genes (DEGs) and background genes,
-#' summarizing the statistical evidence for a functional relationship.
+#' For each built-in or LLM-derived de novo biological function, this function compares the
+#' gene-function cosine similarity distributions of differentially expressed genes (DEGs)
+#' and background genes, summarizing the statistical evidence for DEG-function relationships.
 #'
 #' The function returns the one-tailed Wilcoxon rank-sum test p-value (testing whether DEGs >
 #' background), the median cosine similarities for DEGs and background genes, their median
@@ -11,31 +11,31 @@
 #' similarity to the function.
 #'
 #' @details
-#' \code{RunDEGEmbedR()} implements the analysis workflow described in the DEGEmbedR vignette and manuscript.
-#' It supports curated functional collections included with the package, including MSigDB GO Biological
-#' Processes and MSigDB C2 pathway collections (BIOCARTA, KEGG, PID, REACTOME, and WikiPathways).
-#' In addition, the GSAI mode generates an AI-derived functional hypothesis from the input DEGs and
-#' evaluates its similarity to gene embeddings to assess potential biological mechanisms.
+#' \code{RunDEGEmbedR()} is the main function that implements the analysis workflow described
+#' in the DEGEmbedR vignette and manuscript. It supports curated functional collections included
+#' with the package, including MSigDB GO Biological Processes (BP) and MSigDB C2 pathway collections
+#'  (BIOCARTA, KEGG, PID, REACTOME, and WikiPathways). In addition, the GSAI mode generates AI-derived
+#'  de novo functional hypotheses from the input DEGs and then evaluates the similarity between the
+#'  de novo functions to DEGs based on embeddings to statistically validate these functional hypotheses.
 #'
 #'
 #' @param degs Character. Differential expressed genes (DEGs). After intersecting with
 #'   the built-in gene universe (~18,000 genes), the number of matched DEGs must be between 15 and 500.
-#' @param bkgs Character. Background genes (optional). If \code{NULL}, the built-in gene
-#'   universe—comprising ~18k human protein-coding genes from the NCBI Gene database—is used
-#'   as the background.
+#' @param bkgs Character. Optional customized background genes such as targeted arrays. If `NULL`, a built-in gene
+#'   universe (~18k human protein-coding genes from the NCBI Gene database) is used.
 #' @param category Character. Functional database or mode to use. Must be one of:
 #'   \code{"GOBP"}, \code{"C2CP_all"}, \code{"BIOCARTA"}, \code{"KEGG"}, \code{"PID"},
 #'   \code{"REACTOME"}, \code{"WP"}, or \code{"GSAI"} (case-insensitive).
-#' @param api_key Character. OpenAI API key (obtainable from https://openai.com/api/).
+#' @param api_key Character (optional). OpenAI API key (https://openai.com/api/). Required only for the `GSAI` mode.
 #' @param output Logical. Whether to save the result as a time-stamped tab-delimited \code{.txt} file.
 #'   Default: \code{TRUE}.
 #'
 #' @return A \link[tibble]{tibble} with one row per pathway or term, including:
 #' \describe{
-#'   \item{\code{name}}{Pathway or term name}
+#'   \item{\code{name}}{Function or pathway name}
 #'   \item{\code{p_value_MWN_one_tailed}}{One-tailed Wilcoxon p-value (DEGs > background)}
-#'   \item{\code{median_cosine_similarity_degs}}{Median cosine similarity among DEGs}
-#'   \item{\code{median_cosine_similarity_bkgs}}{Median cosine similarity among background genes}
+#'   \item{\code{median_cosine_similarity_degs}}{Median gene-function cosine similarity among DEGs}
+#'   \item{\code{median_cosine_similarity_bkgs}}{Median gene-function cosine similarity among background genes}
 #'   \item{\code{diff_cosine_similarity}}{Difference: median(DEGs) – median(background)}
 #'   \item{\code{cliffs_delta}}{Cliff's delta effect size}
 #'   \item{\code{cliffs_delta_ci_95}}{95% confidence interval for Cliff's delta}
@@ -51,35 +51,34 @@
 #' \dontrun{
 #' api_key <- "YOUR_OPENAI_API_KEY"
 #'
-#' load(system.file("examples", "example.rdata", package = "DEGEmbedR"))
-#' length(degs)
-#' length(bkgs)
+#' # (A) Using a curated functional annotation collection
+#' # NeST: 79 (ATM-Dependent DNA Repair)
+#' NeST79 <- c('ATM', 'AURKA', 'BARD1', 'BLM', 'BRCA1',
+#'             'BRCA2', 'BRIP1', 'BUB1B', 'CDC73', 'CHEK1',
+#'              'FANCA', 'FANCD2', 'MDC1', 'MDM2', 'MRE11',
+#'              'MSH6', 'NBN', 'PALB2', 'POLH', 'RAD50',
+#'              'RAD51', 'RAD51B', 'RAD51C', 'RAD51D', 'TOP2A',
+#'              'TP53', 'WRN', 'XRCC2', 'XRCC3')
 #'
-#' # (A) Using a curated functional collection
-#' res_tb1 <- RunDEGEmbedR(
-#'   degs = degs,
-#'   category ="GOBP",
-#'   api_key = api_key
-#' )
+#'result_tb1 <- RunDEGEmbedR(
+#'degs = NeST79,
+#'category = "GOBP"
+#')
+#'
 #' head(res_tb1)
 #'
-#' # (B) Using an AI-derived functional hypothesis
-#' res_tb2 <- RunDEGEmbedR(
-#'   degs = degs,
-#'   category = "GSAI",
-#'   api_key = api_key
-#' )
+#' # (B) Using AI-derived functional hypotheses
+#' # NeST: 105 (Ubiquitin Regulation of p53 Activity)
+#' NeST105 <- c('CUL3', 'ELOC', 'FBXW7', 'HSP90AA1', 'MDM2', 'SKP1', 'STK11', 'TNF', 'VHL')
+#'
+#' result_tb2 <- RunDEGEmbedR(
+#'  degs = NeST105,
+#'  category = "GSAI",
+#'  api_key = api_key
+#')
+#'
 #' head(res_tb2)
 #'
-#' # (C) Using user-supplied background genes
-#' res_tb3 <- RunDEGEmbedR(
-#'   degs = degs,
-#'   bkgs = bkgs,
-#'   category = "GOBP",
-#'   api_key = api_key
-#' )
-#' head(res_tb3)
-#' }
 #'
 #' @seealso
 #'   \code{\link[stats]{wilcox.test}},
@@ -97,12 +96,11 @@
 RunDEGEmbedR <- function(degs,
                          bkgs = NULL,
                          category = c("GOBP","C2CP_all","BIOCARTA", "KEGG","PID","REACTOME", "WP", "GSAI"),
-                         api_key,
+                         api_key = NULL,
                          output = TRUE){
 
   #Input checks
   if (missing(degs) || is.null(degs) || identical(degs, "")) stop("DEGs is required.")
-  if (missing(api_key) || is.null(api_key) || identical(api_key, "")) stop("Missing API key.")
   if (missing(category) || is.null(category) || identical(category, "")) stop("Category is required.")
 
   ###Load data###
@@ -162,6 +160,8 @@ RunDEGEmbedR <- function(degs,
   ###GSAI###
 
   if(toupper(category) == toupper("GSAI")){
+  if (missing(api_key) || is.null(api_key) || identical(api_key, "")) stop("Missing API key.")
+
   ##Run GSAI##
     gsai <- RunGSAI(degs = match_degs,api_key = api_key,gsai_prompt = gsai_prompt,output = TRUE)
 

@@ -18,24 +18,21 @@ Authors@R:
              role = c("aut", "cre"),
              comment = c(affiliation = "University of Pittsburgh"))
              )
-Description: 
-    DEGEmbedR enables statistical hypothesis testing of gene–function relationships using embedding representations derived from large language models (LLMs). The package provides
-    tools to:
-    (i) GeneratePathwayDescription: generate function descriptions from names using GPT-4o
-         (e.g., for biological pathways or drug mechanisms of action),
-    (ii) GenerateTextEmbedding: compute function embeddings from user- or GPT-4o-generated
-         function descriptions, and
-    (iii) RunDEGEmbedR (main function): perform nonparametric statistical testing of 
-          gene–function cosine similarity distributions between differentially expressed genes 
-          (DEGs) and background genes.
-    DEGEmbedR is designed specifically for human genes. It supports a curated background of 
-    ~18k human protein-coding genes from the NCBI Gene database, and all built-in annotations 
-    and similarity matrices are human-specific.
-    The framework supports both curated functional collections (such as MSigDB GO Biological 
-    Processes, MSigDB Canonical Pathways, and mechanisms of action [MOA]) and custom, 
-    user-supplied embeddings. It facilitates gene–function association testing where predefined 
-    gene sets are unavailable and enables statistical assessment of novel biological hypotheses 
-    inferred from LLMs.
+Description:
+    DEGEmbedR enables statistical hypothesis testing of gene–function relationships 
+    using embedding representations derived from large language models (LLMs). The 
+    package provides the main `RunDEGEmbedR()` function to perform nonparametric
+    statistical testing ofgene–function cosine similarity distributions between
+    differentially expressed genes (DEGs) and build-in or customized background genes. 
+    DEGEmbedR is designed specifically for human genes and supports a curated background of ~18k human 
+    protein-coding genes from the NCBI Gene database. All built-in annotations and 
+    similarity matrices are human-specific. The framework supports curated functional 
+    collections such as MSigDB GO Biological Processes (BP) and MSigDB Canonical Pathways (CP). 
+    In addition, the `GSAI` mode generates AI-derived functional hypotheses from 
+    the input DEGs and then evaluates the similarity between the de novo functions to DEGs
+    based on embeddings to statistically validate these functional hypotheses. This approach
+    facilitates gene–function association testing when predefined gene set annotations are unavailable
+    and enables the statistical assessment of novel biological hypotheses inferred from LLMs.
 License: MIT
 Encoding: UTF-8
 LazyData: true
