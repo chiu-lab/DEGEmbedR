@@ -1,5 +1,4 @@
-#' Generate a function to run GASI
-
+# Generate a function to run GASI
 
 RunGSAI <- function(
     degs,
@@ -61,8 +60,17 @@ RunGSAI <- function(
     }
 
     out <- parsed$choices[[1]]$message$content
-    if (is.null(out) || identical(out, "")) stop("No content returned from API.")
+    if (is.null(out) || identical(trimws(out), "")) stop("No content returned from API.")
     trimws(out)
+  }
+
+  # Helper: detect missing / null-like text
+  is_missing_text <- function(x) {
+    x <- as.character(x)
+    x <- trimws(x)
+    is.na(x) |
+      x == "" |
+      tolower(x) %in% c("na", "n/a", "null", "none")
   }
 
   parse_out <- function(out_text) {
@@ -74,30 +82,52 @@ RunGSAI <- function(
 
     df <- tibble::tibble(text = parts) |>
       dplyr::mutate(
-        confidence = as.numeric(stringr::str_extract(text, "(?<=confidence: )\\d+\\.\\d+")),
-        clean_text = stringr::str_remove(text, "^\\(LLM self-assessed confidence: [0-9.]+\\)\\s*"),
-        m = stringr::str_match(clean_text, paste0("^\\s*(.+?)\\s*", sep_class, "\\s*(.+)\\s*$")),
+        confidence = suppressWarnings(
+          as.numeric(stringr::str_extract(text, "(?<=confidence: )\\d+\\.?\\d*"))
+        ),
+        clean_text = stringr::str_remove(
+          text,
+          "^\\(LLM self-assessed confidence: [0-9.]+\\)\\s*"
+        ),
+        m = stringr::str_match(
+          clean_text,
+          paste0("^\\s*(.+?)\\s*", sep_class, "\\s*(.+)\\s*$")
+        ),
         title = m[, 2],
         description = m[, 3]
       ) |>
       dplyr::select(-m) |>
       dplyr::mutate(
-        title = stringr::str_trim(title),
-        description = stringr::str_trim(description)
+        title = stringr::str_squish(title),
+        description = stringr::str_squish(description)
       ) |>
-      dplyr::filter(!is.na(title), title != "", !is.na(description), description != "") |>
+      dplyr::filter(
+        !is_missing_text(title),
+        !is_missing_text(description)
+      ) |>
       dplyr::distinct(title, .keep_all = TRUE) |>
       dplyr::select(title, description, confidence)
 
     df
   }
 
-  # Run with retry if parse fails
+  # Validate parsed output
+  has_valid_result <- function(df, min_rows = 1) {
+    if (is.null(df) || !is.data.frame(df)) return(FALSE)
+    if (nrow(df) < min_rows) return(FALSE)
+    if (!all(c("title", "description") %in% colnames(df))) return(FALSE)
+
+    # reject if any title/description is NA, NULL-like, or empty
+    if (any(is_missing_text(df$title))) return(FALSE)
+    if (any(is_missing_text(df$description))) return(FALSE)
+
+    TRUE
+  }
+
   attempt <- 0
   last_out <- NULL
   last_df <- NULL
 
-  # message("Start Processing!")
   while (attempt <= max_retries) {
     attempt <- attempt + 1
 
@@ -106,23 +136,49 @@ RunGSAI <- function(
     } else {
       paste(
         prompt,
-        "\n\nFORMAT STRICTLY as multiple paragraphs. Each paragraph MUST be:\n",
-        "(LLM self-assessed confidence: 0.xx) <TITLE> : <DESCRIPTION>\n",
-        "Use exactly one ':' between title and description. No bullets, no numbering.",
+        "\n\nFORMAT STRICTLY as multiple paragraphs.",
+        "\nEach paragraph MUST be exactly:",
+        "\n(LLM self-assessed confidence: 0.xx) <TITLE> : <DESCRIPTION>",
+        "\nRules:",
+        "\n- Use exactly one ':' between title and description.",
+        "\n- Do not use bullets or numbering.",
+        "\n- TITLE cannot be NA, NULL, N/A, None, or empty.",
+        "\n- DESCRIPTION cannot be NA, NULL, N/A, None, or empty.",
+        "\n- If unsure, still provide the best valid pathway description.",
         sep = ""
       )
     }
 
-    last_out <- call_llm(prompt_try)
-    last_df <- parse_out(last_out)
+    last_out <- tryCatch(
+      call_llm(prompt_try),
+      error = function(e) NULL
+    )
 
-    if (!is.null(last_df) && nrow(last_df) >= min_rows) break
+    if (!is.null(last_out)) {
+      last_df <- tryCatch(
+        parse_out(last_out),
+        error = function(e) NULL
+      )
+    } else {
+      last_df <- NULL
+    }
 
-    message(sprintf("Parse failed (attempt %d/%d). Retrying LLM...", attempt, max_retries + 1))
+    if (has_valid_result(last_df, min_rows = min_rows)) {
+      break
+    }
+
+    if (attempt <= max_retries) {
+      message(sprintf(
+        "Invalid or incomplete result (attempt %d/%d). Retrying LLM...",
+        attempt, max_retries + 1
+      ))
+    }
   }
 
-  if (is.null(last_df) || nrow(last_df) < min_rows) {
-    stop("Could not parse any (title, description) pairs from the model output, even after retry.")
+  # Final fallback
+  if (!has_valid_result(last_df, min_rows = min_rows)) {
+    final <- "No pathway avalibale"
+    return(stats::setNames(final, final))
   }
 
   # Optional file output as a table

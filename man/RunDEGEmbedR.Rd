@@ -14,7 +14,7 @@ RunDEGEmbedR(
 }
 \arguments{
 \item{degs}{Character. Differential expressed genes (DEGs). After intersecting with
-the built-in gene universe (~18,000 genes), the number of matched DEGs must be between 15 and 500.}
+the built-in gene universe (~18,000 genes), the number of matched DEGs must be between 5 and 500.}
 
 \item{bkgs}{Character. Optional customized background genes such as targeted arrays. If \code{NULL}, a built-in gene
 universe (~18k human protein-coding genes from the NCBI Gene database) is used.}

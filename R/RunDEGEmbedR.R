@@ -20,7 +20,7 @@
 #'
 #'
 #' @param degs Character. Differential expressed genes (DEGs). After intersecting with
-#'   the built-in gene universe (~18,000 genes), the number of matched DEGs must be between 15 and 500.
+#'   the built-in gene universe (~18,000 genes), the number of matched DEGs must be between 5 and 500.
 #' @param bkgs Character. Optional customized background genes such as targeted arrays. If `NULL`, a built-in gene
 #'   universe (~18k human protein-coding genes from the NCBI Gene database) is used.
 #' @param category Character. Functional database or mode to use. Must be one of:
@@ -149,7 +149,7 @@ RunDEGEmbedR <- function(degs,
 
   ##degs##
   match_degs <- intersect(degs, gene_list)
-  if(length(match_degs) < 15 | length(match_degs) > 500){
+  if(length(match_degs) < 5 | length(match_degs) > 500){
     stop("Insufficient number of genes to match")
   }else{
     message(sprintf("Differentially expressed genes: There are %d matched genes with build-in gene list", length(match_degs)))
@@ -164,6 +164,7 @@ RunDEGEmbedR <- function(degs,
 
   ##Run GSAI##
     gsai <- RunGSAI(degs = match_degs,api_key = api_key,gsai_prompt = gsai_prompt,output = TRUE)
+    if(gsai == "No pathway avalibale") stop("No pathway avalibale")
 
   ##Generate Text embedding##
     embed_mat <- GenerateTextEmbedding(
