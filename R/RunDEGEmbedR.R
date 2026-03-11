@@ -164,7 +164,7 @@ RunDEGEmbedR <- function(degs,
 
   ##Run GSAI##
     gsai <- RunGSAI(degs = match_degs,api_key = api_key,gsai_prompt = gsai_prompt,output = TRUE)
-    if(gsai == "No pathway avalibale") stop("No pathway avalibale")
+    if(all(names(gsai)=="No pathway avalibale")) stop("No pathway avalibale")
 
   ##Generate Text embedding##
     embed_mat <- GenerateTextEmbedding(
