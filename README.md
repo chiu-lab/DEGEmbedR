@@ -4,7 +4,7 @@
 Instead of relying on predefined gene sets (e.g., GO or KEGG), DEGEmbedR embeds both genes and biological functions in a **continuous semantic space**, enabling quantitative statistical assessment of **DEG–function relationships** for curated or LLM-generated biological functions.
 
 <p align="center">
-  <img src="man/figures/overview.png" alt="DEGEmbedR workflow" width="800">
+  <img src="man/figures/overview.png" alt="DEGEmbedR workflow" width="500">
 </p>
 
 ---
