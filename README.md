@@ -125,7 +125,7 @@ Main function to perform statistical DEG–function testing using curated or *de
 ## Citation
 If you use **DEGEmbedR** in your research, please cite:
 
-> Tan, Y., Wang, L.-J., Liang, T., Lai, Y.-J., Shih, C.-H., Guo, Y., Yasaka, T. M., Tseng, G. C., & Chiu, Y.-C. (2026). _An embedding-based framework enables statistical testing of gene-set function hypotheses inferred by large language models._ **Under review**
+> Tan, Y., Wang, L.-J., Liang, T., Lai, Y.-J., Shih, C.-H., Guo, Y., Yasaka, T. M., Tseng, G. C., & Chiu, Y.-C. (2026). An embedding-based framework enables statistical testing of gene-set function hypotheses inferred by large language models. **Nature Communications**, 17, 9248. https://doi.org/10.1038/s41467-026-75972-z
 
 You can obtain a BibTeX entry in R via:
 
